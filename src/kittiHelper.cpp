@@ -22,6 +22,9 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/PointCloud2.h>
 
+//to fix bug: error: ‘CV_LOAD_IMAGE_GRAYSCALE’ was not declared in this scope error: ‘CV_LOAD_IMAGE_GRAYSCALE’ was not declared in this scope
+
+#include "opencv2/imgcodecs/legacy/constants_c.h"
 std::vector<float> read_lidar_data(const std::string lidar_data_path)
 {
     std::ifstream lidar_data_file(lidar_data_path, std::ifstream::in | std::ifstream::binary);
