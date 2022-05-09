@@ -6,3 +6,8 @@ question:
 1. the readme is not enough,, s.t.:no type tpoint,no declare of point_cloud.points
 
 2.3. r:reflectance , not red,how to use it?
+
+A-LOAM kitti-helper with ros,
+scan-registion  look  main
+
+crtl + 左键可以非常方便的让pcl图像绕轴旋转

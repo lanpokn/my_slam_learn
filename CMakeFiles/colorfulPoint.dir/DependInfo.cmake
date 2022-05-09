@@ -1,32 +1,14 @@
+
+# Consider dependencies only in project.
+set(CMAKE_DEPENDS_IN_PROJECT_ONLY OFF)
+
 # The set of languages for which implicit dependencies are needed:
 set(CMAKE_DEPENDS_LANGUAGES
-  "CXX"
-  )
-# The set of files for implicit dependencies of each language:
-set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/lanpokn/Documents/2022/slam/ex1/src/colorfulPoint.cpp" "/home/lanpokn/Documents/2022/slam/ex1/CMakeFiles/colorfulPoint.dir/src/colorfulPoint.cpp.o"
-  )
-set(CMAKE_CXX_COMPILER_ID "GNU")
-
-# Preprocessor definitions for this target.
-set(CMAKE_TARGET_DEFINITIONS_CXX
-  "DISABLE_LIBUSB_1_0"
-  "DISABLE_PCAP"
-  "DISABLE_PNG"
-  "vtkRenderingContext2D_AUTOINIT=1(vtkRenderingContextOpenGL2)"
-  "vtkRenderingCore_AUTOINIT=3(vtkInteractionStyle,vtkRenderingFreeType,vtkRenderingOpenGL2)"
   )
 
-# The include file search paths:
-set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "/usr/include/eigen3"
-  "/usr/include/vtk-7.1"
-  "/usr/include/freetype2"
-  "/usr/include/pcl-1.10"
-  "/usr/include/ni"
-  "/usr/include/openni2"
-  "include"
-  "/usr/include/opencv4"
+# The set of dependency files which are needed:
+set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/lanpokn/Documents/2022/slam/ex1/src/colorfulPoint.cpp" "CMakeFiles/colorfulPoint.dir/src/colorfulPoint.cpp.o" "gcc" "CMakeFiles/colorfulPoint.dir/src/colorfulPoint.cpp.o.d"
   )
 
 # Targets to which this target links.

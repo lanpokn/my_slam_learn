@@ -1,7 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/colorfulPoint.dir/src/colorfulPoint.cpp.o"
-  "bin/colorfulPoint.pdb"
+  "CMakeFiles/colorfulPoint.dir/src/colorfulPoint.cpp.o.d"
   "bin/colorfulPoint"
+  "bin/colorfulPoint.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

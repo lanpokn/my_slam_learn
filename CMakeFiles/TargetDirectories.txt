@@ -1,3 +1,4 @@
-/home/lanpokn/Documents/2022/slam/ex1/CMakeFiles/rebuild_cache.dir
-/home/lanpokn/Documents/2022/slam/ex1/CMakeFiles/edit_cache.dir
 /home/lanpokn/Documents/2022/slam/ex1/CMakeFiles/colorfulPoint.dir
+/home/lanpokn/Documents/2022/slam/ex1/CMakeFiles/test_cv.dir
+/home/lanpokn/Documents/2022/slam/ex1/CMakeFiles/edit_cache.dir
+/home/lanpokn/Documents/2022/slam/ex1/CMakeFiles/rebuild_cache.dir
