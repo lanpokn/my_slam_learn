@@ -28,7 +28,10 @@ const double camera_cx = 601.8873;
 const double camera_cy = 183.1104;
 const double camera_fx = 707.0912;
 const double camera_fy = 721.5377;
+Eigen::MatrixXd P0(3,4);
+Eigen::MatrixXd P1(3,4);
 Eigen::MatrixXd P2(3,4);
+Eigen::MatrixXd P3(3,4);
 Eigen::MatrixXd Tr(4,4);
 }
 // calib.txt: Calibration data for the cameras: P0/P1 are the 3x4 projection
@@ -39,7 +42,12 @@ Eigen::MatrixXd Tr(4,4);
 // transform it like:
 
 //   x = Pi * Tr * X
-
+// -1.857739385241e-03, -9.999659513510e-01, -8.039975204516e-03, -4.784029760483e-03, 
+// -6.481465826011e-03, 8.051860151134e-03, -9.999466081774e-01, -7.337429464231e-02,
+//  9.999773098287e-01, -1.805528627661e-03, -6.496203536139e-03,-3.339968064433e-01,
+// 0,0,0,1
+//or
+// 0,0,0,1
 int main(int argc, char** argv)
 {	
 	// Mat picture = imread("1.jpg");
@@ -47,8 +55,11 @@ int main(int argc, char** argv)
     // //也就是和test.cpp文件放在一个文件夹下！！！
     // imshow("测试程序", picture);
     // waitKey(20150901);
+	P0<<7.070912000000e+02,0.000000000000e+00,6.018873000000e+02,0.000000000000e+00,0.000000000000e+00,7.070912000000e+02,1.831104000000e+02,0.000000000000e+00,0.000000000000e+00,0.000000000000e+00,1.000000000000e+00,0.000000000000e+00;
+	P1<<7.070912000000e+02,0.000000000000e+00,6.018873000000e+02,-3.798145000000e+02,0.000000000000e+00,7.070912000000e+02,1.831104000000e+02,0.000000000000e+00,0.000000000000e+00,0.000000000000e+00,1.000000000000e+00,0.000000000000e+00;
 	P2<<7.070912000000e+02,0.000000000000e+00,6.018873000000e+02,4.688783000000e+01,0.000000000000e+00,7.070912000000e+02,1.831104000000e+02,1.178601000000e-01,0.000000000000e+00,0.000000000000e+00,1.000000000000e+00,6.203223000000e-03;
-	Tr<<-1.857739385241e-03, -9.999659513510e-01, -8.039975204516e-03, -4.784029760483e-03, -6.481465826011e-03, 8.051860151134e-03, -9.999466081774e-01, -7.337429464231e-02, 9.999773098287e-01, -1.805528627661e-03, -6.496203536139e-03,-3.339968064433e-01,0,0,0,1;
+	P3<<7.070912000000e+02,0.000000000000e+00,6.018873000000e+02,-3.334597000000e+02,0.000000000000e+00,7.070912000000e+02,1.831104000000e+02,1.930130000000e+00,0.000000000000e+00,0.000000000000e+00,1.000000000000e+00,3.318498000000e-03;
+	Tr<<-1.857739385241e-03,-9.999659513510e-01,-8.039975204516e-03,-4.784029760483e-03,-6.481465826011e-03,8.051860151134e-03,-9.999466081774e-01,-7.337429464231e-02,9.999773098287e-01,-1.805528627661e-03,-6.496203536139e-03,-3.339968064433e-01,0,0,0,1;
 	cout<<Tr(2,0)<<endl;
 	string currFilenameBinary = "/home/lanpokn/Documents/2022/slam/ex1/04/velodyne/000000.bin";
 	string PCDDIR = "/home/lanpokn/Documents/2022/slam/ex1/result/temp1.pcd";
@@ -70,11 +81,8 @@ void Velodyne_To_PCD(string currFilenameBinary,string PCDDIR,string currFilename
 	float *pz = data+2;
 	Eigen::MatrixXd x_velodyne(4,1);
 	Eigen::MatrixXd x_P2(3,1);
-	Eigen::MatrixXd x_P2_xyz(4,1);
-	//TODO
+	Eigen::MatrixXd x_P_xyz(4,1);
 	float *pr = data+3;
-	float pg = 0;
-	float pb = 0;
 
 	PointCloud point_cloud;
 	// load point cloud
@@ -96,17 +104,21 @@ void Velodyne_To_PCD(string currFilenameBinary,string PCDDIR,string currFilename
 
 		// 从rgb图像中获取它的颜色
 		x_velodyne<<(*px),(*py),(*pz),1;
+		// x_velodyne<<(*px),(*py),(*pz),(*pr);
 		//TODO out of range , so the change is wrong
 		// how to calculate the right m and n
 		//may be there need a transfer from cm to m?,ask!
-		x_P2_xyz = Tr * x_velodyne;
-		double xyz[4] = {x_P2_xyz (0),x_P2_xyz(1),x_P2_xyz(2),x_P2_xyz(3)};
+		x_P_xyz = Tr * x_velodyne;
+		double xyz[4] = {x_P_xyz (0),x_P_xyz(1),x_P_xyz(2),x_P_xyz(3)};
+		// p.x = x_P_xyz(0);
+		// p.y = x_P_xyz(1);
+		// p.z = x_P_xyz(2);
 		x_P2 = P2 * Tr * x_velodyne;
-		cout<<"xyz="<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<" "<<xyz[3]<<endl;
-		cout<<"x_P2 ="<<x_P2<<endl;
+		// cout<<"xyz="<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<" "<<xyz[3]<<endl;
+		// cout<<"x_P2 ="<<x_P2/x_P2(2)<<endl;
 		// normalization
-		int n = x_P2(0)/x_P2(2);
-		int m = x_P2(1)/x_P2(2);
+		int n = x_P2(0)/(x_P2(2));
+		int m = x_P2(1)/(x_P2(2));
 		if (m>m_max){
 			m_max = m;
 		}

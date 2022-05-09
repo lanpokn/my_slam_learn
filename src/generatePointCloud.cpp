@@ -11,10 +11,10 @@ using namespace std;
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
-
 // 定义点云类型
 typedef pcl::PointXYZRGBA PointT;
 typedef pcl::PointCloud<PointT> PointCloud;
+boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
 // camera.fx=721.5377000000
 // camera.fy=721.5377000000
 // camera.cx=609.5593000000

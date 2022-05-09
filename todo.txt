@@ -11,3 +11,7 @@ A-LOAM kitti-helper with ros,
 scan-registion  look  main
 
 crtl + 左键可以非常方便的让pcl图像绕轴旋转
+image的相平面在哪里，这很重要，决定了最后应该如何normaliztion，或者说如何
+建议去slam14讲里边，找找看有没有实际点转相机位置的实例程序，opencv的坑太多
+point can not be correctly responsed to 
+TR or P have problem
