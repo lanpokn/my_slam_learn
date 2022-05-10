@@ -158,10 +158,13 @@ void pointAssociateToMap(RGBPointType const *const pi, RGBPointType *const po)
 	po->x = point_w.x();
 	po->y = point_w.y();
 	po->z = point_w.z();
-	po->intensity = pi->intensity;
+	// po->intensity = pi->intensity;
+	po->b = 0;
+	po->g = 0;
+	po->r = 100;
 	//po->intensity = 1.0;
 }
-// this is
+// this is unused
 void pointAssociateTobeMapped(RGBPointType const *const pi, RGBPointType *const po)
 {
 	Eigen::Vector3d point_w(pi->x, pi->y, pi->z);
@@ -169,7 +172,10 @@ void pointAssociateTobeMapped(RGBPointType const *const pi, RGBPointType *const 
 	po->x = point_curr.x();
 	po->y = point_curr.y();
 	po->z = point_curr.z();
-	po->intensity = pi->intensity;
+	// po->intensity = pi->intensity;
+	po->b = 0;
+	po->g = 0;
+	po->r = 100;
 }
 
 void laserCloudCornerLastHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudCornerLast2)

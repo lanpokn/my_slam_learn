@@ -47,6 +47,9 @@ target_link_libraries(alaserOdometry ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${CERE
 add_executable(alaserMapping src/laserMapping.cpp)
 target_link_libraries(alaserMapping ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${CERES_LIBRARIES})
 
+add_executable(alaserMappingV2 src/laserMappingV2.cpp)
+target_link_libraries(alaserMappingV2 ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${CERES_LIBRARIES})
+
 add_executable(kittiHelper src/kittiHelper.cpp)
 target_link_libraries(kittiHelper ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
