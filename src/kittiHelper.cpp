@@ -90,10 +90,13 @@ int main(int argc, char** argv)
     {
         float timestamp = stof(line);
         std::stringstream left_image_path, right_image_path;
+        //I need colorful image, rather than gray
         left_image_path << dataset_folder << "sequences/" + sequence_number + "/image_0/" << std::setfill('0') << std::setw(6) << line_num << ".png";
-        cv::Mat left_image = cv::imread(left_image_path.str(), CV_LOAD_IMAGE_GRAYSCALE);
+        // cv::Mat left_image = cv::imread(left_image_path.str(), CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat left_image = cv::imread(left_image_path.str(), CV_LOAD_IMAGE_UNCHANGED);
         right_image_path << dataset_folder << "sequences/" + sequence_number + "/image_1/" << std::setfill('0') << std::setw(6) << line_num << ".png";
-        cv::Mat right_image = cv::imread(left_image_path.str(), CV_LOAD_IMAGE_GRAYSCALE);
+        // cv::Mat right_image = cv::imread(left_image_path.str(), CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat right_image = cv::imread(right_image_path.str(), CV_LOAD_IMAGE_UNCHANGED);
 
         std::getline(ground_truth_file, line);
         std::stringstream pose_stream(line);
@@ -159,8 +162,11 @@ int main(int argc, char** argv)
         laser_cloud_msg.header.frame_id = "camera_init";
         pub_laser_cloud.publish(laser_cloud_msg);
 
-        sensor_msgs::ImagePtr image_left_msg = cv_bridge::CvImage(laser_cloud_msg.header, "mono8", left_image).toImageMsg();
-        sensor_msgs::ImagePtr image_right_msg = cv_bridge::CvImage(laser_cloud_msg.header, "mono8", right_image).toImageMsg();
+        // I need colorfulmap not gray, so try to change it
+        // sensor_msgs::ImagePtr image_left_msg = cv_bridge::CvImage(laser_cloud_msg.header, "mono8", left_image).toImageMsg();
+        // sensor_msgs::ImagePtr image_right_msg = cv_bridge::CvImage(laser_cloud_msg.header, "mono8", right_image).toImageMsg();
+        sensor_msgs::ImagePtr image_left_msg = cv_bridge::CvImage(laser_cloud_msg.header, "bgr8", left_image).toImageMsg();
+        sensor_msgs::ImagePtr image_right_msg = cv_bridge::CvImage(laser_cloud_msg.header, "bgr8", right_image).toImageMsg();
         pub_image_left.publish(image_left_msg);
         pub_image_right.publish(image_right_msg);
 

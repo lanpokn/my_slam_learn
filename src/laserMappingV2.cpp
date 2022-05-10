@@ -161,7 +161,7 @@ void pointAssociateToMap(RGBPointType const *const pi, RGBPointType *const po)
 	// po->intensity = pi->intensity;
 	po->b = 0;
 	po->g = 0;
-	po->r = 100;
+	po->r = 255;
 	//po->intensity = 1.0;
 }
 // this is unused
@@ -175,7 +175,7 @@ void pointAssociateTobeMapped(RGBPointType const *const pi, RGBPointType *const 
 	// po->intensity = pi->intensity;
 	po->b = 0;
 	po->g = 0;
-	po->r = 100;
+	po->r = 255;
 }
 
 void laserCloudCornerLastHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudCornerLast2)
