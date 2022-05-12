@@ -70,6 +70,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
+ 
+using namespace std;
 int frameCount = 0;
 
 double timeLaserCloudCornerLast = 0;
@@ -93,6 +95,7 @@ int laserCloudValidInd[125];
 int laserCloudSurroundInd[125];
 
 cv::Mat rgb;
+bool getrgb =false;
 // input: from odom
 pcl::PointCloud<RGBPointType>::Ptr laserCloudCornerLast(new pcl::PointCloud<RGBPointType>());
 pcl::PointCloud<RGBPointType>::Ptr laserCloudSurfLast(new pcl::PointCloud<RGBPointType>());
@@ -127,11 +130,12 @@ Eigen::Vector3d t_wmap_wodom(0, 0, 0);
 Eigen::Quaterniond q_wodom_curr(1, 0, 0, 0);
 Eigen::Vector3d t_wodom_curr(0, 0, 0);
 
-
+//it's hard to understand the bug of thread
 std::queue<sensor_msgs::PointCloud2ConstPtr> cornerLastBuf;
 std::queue<sensor_msgs::PointCloud2ConstPtr> surfLastBuf;
 std::queue<sensor_msgs::PointCloud2ConstPtr> fullResBuf;
 std::queue<nav_msgs::Odometry::ConstPtr> odometryBuf;
+std::queue<sensor_msgs::ImageConstPtr> imageBuf;
 std::mutex mBuf;
 
 pcl::VoxelGrid<RGBPointType> downSizeFilterCorner;
@@ -145,6 +149,13 @@ RGBPointType pointOri, pointSel;
 ros::Publisher pubLaserCloudSurround, pubLaserCloudMap, pubLaserCloudFullRes, pubOdomAftMapped, pubOdomAftMappedHighFrec, pubLaserAfterMappedPath;
 
 nav_msgs::Path laserAfterMappedPath;
+
+Eigen::MatrixXd P0(3,4);
+Eigen::MatrixXd P1(3,4);
+Eigen::MatrixXd P2(3,4);
+Eigen::MatrixXd P3(3,4);
+Eigen::MatrixXd Tr(4,4);
+using namespace std;
 // set initial guess
 void transformAssociateToMap()
 {
@@ -157,7 +168,40 @@ void transformUpdate()
 	q_wmap_wodom = q_w_curr * q_wodom_curr.inverse();
 	t_wmap_wodom = t_w_curr - q_wmap_wodom * t_wodom_curr;
 }
+bool getBGR(RGBPointType *const po){
+	Eigen::MatrixXd x_velodyne(4,1);
+	Eigen::MatrixXd x_P2(3,1);
+	Eigen::MatrixXd x_P_xyz(4,1);
+	x_velodyne<<(po->x),(po->y),(po->z),1;
+	x_P2 = P2 * Tr * x_velodyne;
 
+	int n = x_P2(0)/(x_P2(2));
+	int m = x_P2(1)/(x_P2(2));
+	int one = x_P2(2);
+	if(getrgb == false){
+		return false;
+	}
+	printf("2\n");
+	rgb = cv_bridge::toCvShare(imageBuf.front(), "bgr8")->image;
+	if(m<rgb.rows and n<rgb.cols and x_P2(2)>0 and m>0 and n>0){
+		if(m<0){
+			printf("error");
+		}//bgr
+		printf("3\n");
+		po->r = rgb.ptr<uchar>(m)[3*n+2];
+		po->b = rgb.ptr<uchar>(m)[n*3];
+		po->g = rgb.ptr<uchar>(m)[n*3+1];
+		printf("true\n");
+		return true;
+	}
+	else{
+		po->r = 255;
+		po->b = 0;
+		po->g = 0;
+		printf("false\n");
+		return false;
+	}
+}
 void pointAssociateToMap(RGBPointType const *const pi, RGBPointType *const po)
 {
 	Eigen::Vector3d point_curr(pi->x, pi->y, pi->z);
@@ -166,9 +210,14 @@ void pointAssociateToMap(RGBPointType const *const pi, RGBPointType *const po)
 	po->y = point_w.y();
 	po->z = point_w.z();
 	// po->intensity = pi->intensity;
-	po->b = 0;
-	po->g = 0;
-	po->r = 255;
+	if(getBGR(po) ==false){
+		po->b = 0;
+		po->g = 0;
+		po->r = 255;
+	}
+	// po->b = 0;
+	// po->g = 0;
+	// po->r = 255;
 	//po->intensity = 1.0;
 }
 // this is unused
@@ -180,17 +229,25 @@ void pointAssociateTobeMapped(RGBPointType const *const pi, RGBPointType *const 
 	po->y = point_curr.y();
 	po->z = point_curr.z();
 	// po->intensity = pi->intensity;
-	po->b = 0;
-	po->g = 0;
-	po->r = 255;
+	if(getBGR(po) ==false){
+		po->b = 0;
+		po->g = 0;
+		po->r = 255;
+	}
+	// po->b = 0;
+	// po->g = 0;
+	// po->r = 255;
 }
 void imageCallback(const sensor_msgs::ImageConstPtr& msg){
 	mBuf.lock();
-	rgb = cv_bridge::toCvShare(msg, "bgr8")->image;
-	std::cout<<rgb.cols<<std::endl;
+	// rgb = cv_bridge::toCvShare(msg, "bgr8")->image;
+	// std::cout<<(int)rgb.ptr<uchar>(0)[3*0+2]<<std::endl;
+	imageBuf.push(msg);
+	if(getrgb == false){
+		getrgb = true;
+	}
 	mBuf.unlock();
 }
-
 
 void laserCloudCornerLastHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudCornerLast2)
 {
@@ -913,7 +970,13 @@ void process()
 }
 
 int main(int argc, char **argv)
-{
+{	
+	P0<<7.070912000000e+02,0.000000000000e+00,6.018873000000e+02,0.000000000000e+00,0.000000000000e+00,7.070912000000e+02,1.831104000000e+02,0.000000000000e+00,0.000000000000e+00,0.000000000000e+00,1.000000000000e+00,0.000000000000e+00;
+	P1<<7.070912000000e+02,0.000000000000e+00,6.018873000000e+02,-3.798145000000e+02,0.000000000000e+00,7.070912000000e+02,1.831104000000e+02,0.000000000000e+00,0.000000000000e+00,0.000000000000e+00,1.000000000000e+00,0.000000000000e+00;
+	P2<<7.070912000000e+02,0.000000000000e+00,6.018873000000e+02,4.688783000000e+01,0.000000000000e+00,7.070912000000e+02,1.831104000000e+02,1.178601000000e-01,0.000000000000e+00,0.000000000000e+00,1.000000000000e+00,6.203223000000e-03;
+	P3<<7.070912000000e+02,0.000000000000e+00,6.018873000000e+02,-3.334597000000e+02,0.000000000000e+00,7.070912000000e+02,1.831104000000e+02,1.930130000000e+00,0.000000000000e+00,0.000000000000e+00,1.000000000000e+00,3.318498000000e-03;
+	Tr<<-1.857739385241e-03,-9.999659513510e-01,-8.039975204516e-03,-4.784029760483e-03,-6.481465826011e-03,8.051860151134e-03,-9.999466081774e-01,-7.337429464231e-02,9.999773098287e-01,-1.805528627661e-03,-6.496203536139e-03,-3.339968064433e-01,0,0,0,1;
+	
 	ros::init(argc, argv, "laserMapping");
 	ros::NodeHandle nh;
 
