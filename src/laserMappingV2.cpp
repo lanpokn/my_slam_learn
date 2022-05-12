@@ -181,24 +181,23 @@ bool getBGR(RGBPointType *const po){
 	if(getrgb == false){
 		return false;
 	}
-	printf("2\n");
 	rgb = cv_bridge::toCvShare(imageBuf.front(), "bgr8")->image;
 	if(m<rgb.rows and n<rgb.cols and x_P2(2)>0 and m>0 and n>0){
 		if(m<0){
 			printf("error");
 		}//bgr
-		printf("3\n");
+		// printf("3\n");
 		po->r = rgb.ptr<uchar>(m)[3*n+2];
 		po->b = rgb.ptr<uchar>(m)[n*3];
 		po->g = rgb.ptr<uchar>(m)[n*3+1];
-		printf("true\n");
+		// printf("true\n");
 		return true;
 	}
 	else{
 		po->r = 255;
 		po->b = 0;
 		po->g = 0;
-		printf("false\n");
+		// printf("false\n");
 		return false;
 	}
 }
