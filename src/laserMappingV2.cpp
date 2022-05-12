@@ -62,7 +62,14 @@
 #include "aloam_velodyne/common.h"
 #include "aloam_velodyne/tic_toc.h"
 
+#include <image_transport/image_transport.h>
+//eigen
+#include<Eigen/Eigen>
 
+// OpenCV 库
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <cv_bridge/cv_bridge.h>
 int frameCount = 0;
 
 double timeLaserCloudCornerLast = 0;
@@ -85,6 +92,7 @@ const int laserCloudNum = laserCloudWidth * laserCloudHeight * laserCloudDepth; 
 int laserCloudValidInd[125];
 int laserCloudSurroundInd[125];
 
+cv::Mat rgb;
 // input: from odom
 pcl::PointCloud<RGBPointType>::Ptr laserCloudCornerLast(new pcl::PointCloud<RGBPointType>());
 pcl::PointCloud<RGBPointType>::Ptr laserCloudSurfLast(new pcl::PointCloud<RGBPointType>());
@@ -137,7 +145,6 @@ RGBPointType pointOri, pointSel;
 ros::Publisher pubLaserCloudSurround, pubLaserCloudMap, pubLaserCloudFullRes, pubOdomAftMapped, pubOdomAftMappedHighFrec, pubLaserAfterMappedPath;
 
 nav_msgs::Path laserAfterMappedPath;
-
 // set initial guess
 void transformAssociateToMap()
 {
@@ -177,6 +184,13 @@ void pointAssociateTobeMapped(RGBPointType const *const pi, RGBPointType *const 
 	po->g = 0;
 	po->r = 255;
 }
+void imageCallback(const sensor_msgs::ImageConstPtr& msg){
+	mBuf.lock();
+	rgb = cv_bridge::toCvShare(msg, "bgr8")->image;
+	std::cout<<rgb.cols<<std::endl;
+	mBuf.unlock();
+}
+
 
 void laserCloudCornerLastHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudCornerLast2)
 {
@@ -918,6 +932,9 @@ int main(int argc, char **argv)
 	ros::Subscriber subLaserOdometry = nh.subscribe<nav_msgs::Odometry>("/laser_odom_to_init", 100, laserOdometryHandler);
 
 	ros::Subscriber subLaserCloudFullRes = nh.subscribe<sensor_msgs::PointCloud2>("/velodyne_cloud_3", 100, laserCloudFullResHandler);
+
+	image_transport::ImageTransport it(nh);
+  	image_transport::Subscriber sub = it.subscribe("/image_left", 2, imageCallback);
 
 	pubLaserCloudSurround = nh.advertise<sensor_msgs::PointCloud2>("/laser_cloud_surround", 100);
 
