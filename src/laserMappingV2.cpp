@@ -70,7 +70,12 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
- 
+
+//to solve problem :Failed to find match for field 'rgba'.
+// #include <vtkAutoInit.h>
+// VTK_MODULE_INIT(vtkInteractionStyle)
+// VTK_MODULE_INIT(vtkRenderingFreeType)  
+
 using namespace std;
 int frameCount = 0;
 
@@ -182,6 +187,8 @@ bool getBGR(RGBPointType *const po){
 		return false;
 	}
 	rgb = cv_bridge::toCvShare(imageBuf.front(), "bgr8")->image;
+	// cout<<1<<endl;
+	// rgb = cv_bridge::toCvCopy(imageBuf.front(), "bgr8")->image;
 	if(m<rgb.rows and n<rgb.cols and x_P2(2)>0 and m>0 and n>0){
 		if(m<0){
 			printf("error");
@@ -214,6 +221,7 @@ void pointAssociateToMap(RGBPointType const *const pi, RGBPointType *const po)
 		po->g = 0;
 		po->r = 255;
 	}
+	// cout<<po->b;
 	// po->b = 0;
 	// po->g = 0;
 	// po->r = 255;
@@ -233,6 +241,7 @@ void pointAssociateTobeMapped(RGBPointType const *const pi, RGBPointType *const 
 		po->g = 0;
 		po->r = 255;
 	}
+	cout<<po->b;
 	// po->b = 0;
 	// po->g = 0;
 	// po->r = 255;
@@ -242,6 +251,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg){
 	// rgb = cv_bridge::toCvShare(msg, "bgr8")->image;
 	// std::cout<<(int)rgb.ptr<uchar>(0)[3*0+2]<<std::endl;
 	imageBuf.push(msg);
+	cout<<2<<endl;
 	if(getrgb == false){
 		getrgb = true;
 	}
@@ -350,7 +360,7 @@ void process()
 				mBuf.unlock();
 				break;
 			}
-
+			cout<<1<<endl;
 			laserCloudCornerLast->clear();
 			pcl::fromROSMsg(*cornerLastBuf.front(), *laserCloudCornerLast);
 			cornerLastBuf.pop();
@@ -362,7 +372,7 @@ void process()
 			laserCloudFullRes->clear();
 			pcl::fromROSMsg(*fullResBuf.front(), *laserCloudFullRes);
 			fullResBuf.pop();
-
+			cout<<2<<endl;
 			q_wodom_curr.x() = odometryBuf.front()->pose.pose.orientation.x;
 			q_wodom_curr.y() = odometryBuf.front()->pose.pose.orientation.y;
 			q_wodom_curr.z() = odometryBuf.front()->pose.pose.orientation.z;
