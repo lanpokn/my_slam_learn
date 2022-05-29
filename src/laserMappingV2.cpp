@@ -83,6 +83,7 @@ double timeLaserCloudCornerLast = 0;
 double timeLaserCloudSurfLast = 0;
 double timeLaserCloudFullRes = 0;
 double timeLaserOdometry = 0;
+double timeimage =0;
 
 
 int laserCloudCenWidth = 10;
@@ -186,7 +187,7 @@ bool getBGR(RGBPointType *const po){
 	if(getrgb == false){
 		return false;
 	}
-	rgb = cv_bridge::toCvShare(imageBuf.front(), "bgr8")->image;
+	// rgb = cv_bridge::toCvShare(imageBuf.front(), "bgr8")->image;
 	// cout<<1<<endl;
 	// rgb = cv_bridge::toCvCopy(imageBuf.front(), "bgr8")->image;
 	if(m<rgb.rows and n<rgb.cols and x_P2(2)>0 and m>0 and n>0){
@@ -251,7 +252,6 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg){
 	// rgb = cv_bridge::toCvShare(msg, "bgr8")->image;
 	// std::cout<<(int)rgb.ptr<uchar>(0)[3*0+2]<<std::endl;
 	imageBuf.push(msg);
-	cout<<2<<endl;
 	if(getrgb == false){
 		getrgb = true;
 	}
@@ -319,7 +319,8 @@ void process()
 	while(1)
 	{
 		while (!cornerLastBuf.empty() && !surfLastBuf.empty() &&
-			!fullResBuf.empty() && !odometryBuf.empty())
+			!fullResBuf.empty() && !odometryBuf.empty()
+			&& !imageBuf.empty())
 		{
 			mBuf.lock();
 			while (!odometryBuf.empty() && odometryBuf.front()->header.stamp.toSec() < cornerLastBuf.front()->header.stamp.toSec())
@@ -345,17 +346,26 @@ void process()
 				mBuf.unlock();
 				break;
 			}
-
+			//do the pop manually
+			while (!imageBuf.empty() && imageBuf.front()->header.stamp.toSec() < cornerLastBuf.front()->header.stamp.toSec()-0.5)
+				imageBuf.pop();
+			if (imageBuf.empty())
+			{
+				mBuf.unlock();
+				break;
+			}
 			timeLaserCloudCornerLast = cornerLastBuf.front()->header.stamp.toSec();
 			timeLaserCloudSurfLast = surfLastBuf.front()->header.stamp.toSec();
 			timeLaserCloudFullRes = fullResBuf.front()->header.stamp.toSec();
 			timeLaserOdometry = odometryBuf.front()->header.stamp.toSec();
+			timeimage = imageBuf.front()->header.stamp.toSec();
 
 			if (timeLaserCloudCornerLast != timeLaserOdometry ||
 				timeLaserCloudSurfLast != timeLaserOdometry ||
-				timeLaserCloudFullRes != timeLaserOdometry)
+				timeLaserCloudFullRes != timeLaserOdometry||
+				timeimage<timeLaserOdometry-0.5)
 			{
-				printf("time corner %f surf %f full %f odom %f \n", timeLaserCloudCornerLast, timeLaserCloudSurfLast, timeLaserCloudFullRes, timeLaserOdometry);
+				printf("time corner %f surf %f full %f odom %f image %f\n", timeLaserCloudCornerLast, timeLaserCloudSurfLast, timeLaserCloudFullRes, timeLaserOdometry,timeimage);
 				printf("unsync messeage!");
 				mBuf.unlock();
 				break;
@@ -372,6 +382,11 @@ void process()
 			laserCloudFullRes->clear();
 			pcl::fromROSMsg(*fullResBuf.front(), *laserCloudFullRes);
 			fullResBuf.pop();
+
+			rgb = cv_bridge::toCvShare(imageBuf.front(), "bgr8")->image;
+			// imageBuf.pop();
+			//I can't pop here because image have different frequency with these(2 and 100), I need to pop when image buf more than than 0.5s diff
+			//which occur 
 			cout<<2<<endl;
 			q_wodom_curr.x() = odometryBuf.front()->pose.pose.orientation.x;
 			q_wodom_curr.y() = odometryBuf.front()->pose.pose.orientation.y;
